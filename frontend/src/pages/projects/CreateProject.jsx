@@ -1,39 +1,76 @@
+// import { useState, useContext } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import { createProject } from '../../services/projects';
+// import AuthContext from '../../context/AuthContext';
+// import ProjectForm from '../../components/ProjectForm';
+
+// const CreateProject = () => {
+//   const [error, setError] = useState('');
+//   const { user } = useContext(AuthContext);
+//   const navigate = useNavigate();
+
+//   const handleSubmit = async (formData) => {
+//     try {
+//       await createProject(formData);
+//       navigate('/my-projects');
+//     } catch (err) {
+//       setError(err.message || 'Failed to create project');
+//     }
+//   };
+
+//   if (!user) return null;
+
+//   return (
+//     <div className="min-h-screen bg-offwhite flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+//       <div className="sm:mx-auto sm:w-full sm:max-w-md">
+//         <h2 className="text-center text-3xl font-light text-primary mb-2">
+//           Create New Project
+//         </h2>
+//         <p className="text-center text-sm text-subtlegray">
+//           Share your project with our community
+//         </p>
+//       </div>
+
+//       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
+//         <div className="bg-secondary py-10 px-6 shadow-sm rounded-lg sm:px-10">
+//           {error && (
+//             <div className="mb-6 border-l-4 border-primary p-4 bg-lightgray">
+//               <p className="text-sm text-darkgray">{error}</p>
+//             </div>
+//           )}
+          
+//           <ProjectForm 
+//             onSubmit={handleSubmit} 
+//             error="" 
+//             customClasses={{
+//               formContainer: "",
+//               inputClass: "appearance-none block w-full px-3 py-2 border border-midgray rounded-md bg-secondary placeholder-subtlegray focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition duration-200 ease-in-out",
+//               labelClass: "block text-sm font-medium text-darkgray mb-1",
+//               buttonClass: "w-full flex justify-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-secondary bg-primary hover:bg-darkgray focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-200 ease-in-out"
+//             }}
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default CreateProject;
+
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createProject } from '../../services/projects';
 import AuthContext from '../../context/AuthContext';
+import ProjectForm from '../../components/ProjectForm';
 
 const CreateProject = () => {
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: 'AIML',
-    technologies: '',
-    price: '',
-    deployedUrl: '',
-    videoUrl: '',
-    documentsUrl: '',
-    folderUrl: '' // ✅ Added this field
-  });
-
   const [error, setError] = useState('');
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (formData) => {
     try {
-      await createProject({
-        ...formData,
-        price: parseFloat(formData.price)
-      });
+      await createProject(formData);
       navigate('/my-projects');
     } catch (err) {
       setError(err.message || 'Failed to create project');
@@ -43,171 +80,36 @@ const CreateProject = () => {
   if (!user) return null;
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Create New Project</h1>
+    <div className="min-h-screen bg-offwhite flex flex-col py-12 px-4 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-4xl">
+        <h2 className="text-center text-3xl font-light text-primary mb-2">
+          Create New Project
+        </h2>
+        <p className="text-center text-sm text-subtlegray">
+          Share your project with our community
+        </p>
+      </div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Title */}
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-4xl lg:max-w-5xl">
+        <div className="bg-secondary py-10 px-6 shadow-sm rounded-lg sm:px-10">
+          {error && (
+            <div className="mb-6 border-l-4 border-primary p-4 bg-lightgray">
+              <p className="text-sm text-darkgray">{error}</p>
+            </div>
+          )}
+          
+          <ProjectForm 
+            onSubmit={handleSubmit} 
+            error="" 
+            customClasses={{
+              formContainer: "",
+              inputClass: "appearance-none block w-full px-3 py-2 border border-midgray rounded-md bg-secondary placeholder-subtlegray focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition duration-200 ease-in-out",
+              labelClass: "block text-sm font-medium text-darkgray mb-1",
+              buttonClass: "w-full flex justify-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-secondary bg-primary hover:bg-darkgray focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-200 ease-in-out"
+            }}
           />
         </div>
-
-        {/* Description */}
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-            rows={4}
-          />
-        </div>
-
-        {/* Category */}
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-            Category
-          </label>
-          <select
-            id="category"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-          >
-            <option value="AIML">AI/ML</option>
-            <option value="WEB">Web</option>
-            <option value="ANDROID">Android</option>
-            <option value="HARDWARE">Hardware</option>
-            <option value="OTHERS">Others</option>
-          </select>
-        </div>
-
-        {/* Technologies */}
-        <div>
-          <label htmlFor="technologies" className="block text-sm font-medium text-gray-700">
-            Technologies Used
-          </label>
-          <input
-            type="text"
-            id="technologies"
-            name="technologies"
-            value={formData.technologies}
-            onChange={handleChange}
-            required
-            placeholder="e.g. React, Node.js, MongoDB"
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-          />
-        </div>
-
-        {/* Price */}
-        <div>
-          <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-            Price (₹)
-          </label>
-          <input
-            type="number"
-            id="price"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-          />
-        </div>
-
-        {/* Deployed URL */}
-        <div>
-          <label htmlFor="deployedUrl" className="block text-sm font-medium text-gray-700">
-            Deployed URL (optional)
-          </label>
-          <input
-            type="url"
-            id="deployedUrl"
-            name="deployedUrl"
-            value={formData.deployedUrl}
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-          />
-        </div>
-
-        {/* Video URL */}
-        <div>
-          <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700">
-            Video URL (optional)
-          </label>
-          <input
-            type="url"
-            id="videoUrl"
-            name="videoUrl"
-            value={formData.videoUrl}
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-          />
-        </div>
-
-        {/* Documents URL */}
-        <div>
-          <label htmlFor="documentsUrl" className="block text-sm font-medium text-gray-700">
-            Documents URL (optional)
-          </label>
-          <input
-            type="url"
-            id="documentsUrl"
-            name="documentsUrl"
-            value={formData.documentsUrl}
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-          />
-        </div>
-
-        {/* ✅ Folder URL */}
-        <div>
-          <label htmlFor="folderUrl" className="block text-sm font-medium text-gray-700">
-            Google Drive Folder URL (optional)
-          </label>
-          <input
-            type="url"
-            id="folderUrl"
-            name="folderUrl"
-            value={formData.folderUrl}
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-          />
-        </div>
-
-        {/* Submit Button */}
-        <div>
-          <button
-            type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-          >
-            Submit Project
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 };

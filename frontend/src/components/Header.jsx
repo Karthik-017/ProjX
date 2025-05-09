@@ -36,38 +36,41 @@ const Header = () => {
                   </Link>
                 </>
               )}
-              {user?.role === 'admin' && (
+              {user?.role === "admin" && (
                 <>
-                <Link
-                  to="/admin"
-                  className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-subtlegray hover:text-darkgray hover:border-midgray transition duration-200"
+                  <Link
+                    to="/admin"
+                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-subtlegray hover:text-darkgray hover:border-midgray transition duration-200"
                   >
-                  Admin
-                </Link>
-                <Link
-                to="/approve-projects"
-                className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-subtlegray hover:text-darkgray hover:border-midgray transition duration-200"
-                >
-                Approve Projects
-              </Link>
-              </>
+                    Admin
+                  </Link>
+                  <Link
+                    to="/approve-projects"
+                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-subtlegray hover:text-darkgray hover:border-midgray transition duration-200"
+                  >
+                    Approve Projects
+                  </Link>
+                </>
               )}
             </nav>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             {user ? (
-              <div className="flex space-x-6">
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium text-darkgray">
+                  {user.name}
+                </span>
                 <Link
                   to="/profile"
                   className="text-subtlegray hover:text-primary transition duration-200"
                 >
-                  <svg 
-                    className="h-6 w-6" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="1.5" 
-                    strokeLinecap="round" 
+                  <svg
+                    className="h-6 w-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
                     strokeLinejoin="round"
                   >
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -78,13 +81,13 @@ const Header = () => {
                   onClick={logout}
                   className="text-subtlegray hover:text-primary transition duration-200"
                 >
-                  <svg 
-                    className="h-6 w-6" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="1.5" 
-                    strokeLinecap="round" 
+                  <svg
+                    className="h-6 w-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
                     strokeLinejoin="round"
                   >
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
