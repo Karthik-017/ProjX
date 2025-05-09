@@ -1,3 +1,5 @@
+// Updated to new black and white UI
+
 import { useState } from 'react';
 
 const PasswordInput = ({ 
