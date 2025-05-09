@@ -1,23 +1,22 @@
 import { Link } from 'react-router-dom';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
-import { LogoutIcon, UserIcon } from '@heroicons/react/outline';
 
 const Header = () => {
   const { user, logout } = useContext(AuthContext);
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-secondary shadow-sm border-b border-lightgray">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-indigo-600">
+            <Link to="/" className="text-xl font-light text-primary">
               ProjectMarket
             </Link>
-            <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <nav className="hidden sm:ml-10 sm:flex sm:space-x-8">
               <Link
                 to="/projects"
-                className="inline-flex items-center px-1 pt-1 border-b-2 border-indigo-500 text-sm font-medium text-gray-900"
+                className="inline-flex items-center px-1 pt-1 border-b-2 border-primary text-sm font-medium text-darkgray"
               >
                 Browse Projects
               </Link>
@@ -25,13 +24,13 @@ const Header = () => {
                 <>
                   <Link
                     to="/my-projects"
-                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-subtlegray hover:text-darkgray hover:border-midgray transition duration-200"
                   >
                     My Projects
                   </Link>
                   <Link
                     to="/my-purchases"
-                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-subtlegray hover:text-darkgray hover:border-midgray transition duration-200"
                   >
                     My Purchases
                   </Link>
@@ -41,13 +40,13 @@ const Header = () => {
                 <>
                 <Link
                   to="/admin"
-                  className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-subtlegray hover:text-darkgray hover:border-midgray transition duration-200"
                   >
                   Admin
                 </Link>
                 <Link
                 to="/approve-projects"
-                className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-subtlegray hover:text-darkgray hover:border-midgray transition duration-200"
                 >
                 Approve Projects
               </Link>
@@ -57,31 +56,54 @@ const Header = () => {
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             {user ? (
-              <div className="flex space-x-4">
+              <div className="flex space-x-6">
                 <Link
                   to="/profile"
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-subtlegray hover:text-primary transition duration-200"
                 >
-                  <UserIcon className="h-6 w-6" />
+                  <svg 
+                    className="h-6 w-6" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
                 </Link>
                 <button
                   onClick={logout}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-subtlegray hover:text-primary transition duration-200"
                 >
-                  <LogoutIcon className="h-6 w-6" />
+                  <svg 
+                    className="h-6 w-6" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
                 </button>
               </div>
             ) : (
-              <div className="flex space-x-4">
+              <div className="flex items-center space-x-6">
                 <Link
                   to="/login"
-                  className="text-sm font-medium text-gray-500 hover:text-gray-700"
+                  className="text-sm font-medium text-subtlegray hover:text-primary transition duration-200"
                 >
-                  Login
+                  Sign in
                 </Link>
                 <Link
                   to="/register"
-                  className="text-sm font-medium text-gray-500 hover:text-gray-700"
+                  className="px-4 py-2 border border-primary rounded-md text-sm font-medium text-primary hover:bg-primary hover:text-secondary transition duration-200"
                 >
                   Register
                 </Link>
