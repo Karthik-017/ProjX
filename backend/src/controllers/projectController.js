@@ -40,6 +40,7 @@ exports.getUnapprovedProjects = async (req, res) => {
   }
 };
 
+
 exports.getProjectById = async (req, res) => {
   try {
     const project = await prisma.project.findUnique({
@@ -51,6 +52,14 @@ exports.getProjectById = async (req, res) => {
             name: true,
             email: true
           }
+        },
+        purchases: {
+          where: {
+            buyerUserId: req.user?.id
+          },
+          select: {
+            id: true
+          }
         }
       }
     });
@@ -59,7 +68,21 @@ exports.getProjectById = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    res.status(200).json(project);
+    // Clone the project object to modify it
+    const projectResponse = { ...project };
+
+    // Check if user has purchased this project or is the owner
+    const hasPurchased = project.purchases.length > 0;
+    const isOwner = project.userId === req.user?.id;
+    const isAdmin = req.user?.role === 'admin';
+
+    // Hide sensitive URLs if user doesn't have access
+    if (!hasPurchased && !isOwner && !isAdmin) {
+      projectResponse.documentsUrl = null;
+      projectResponse.folderUrl = null;
+    }
+
+    res.status(200).json(projectResponse);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -67,7 +90,7 @@ exports.getProjectById = async (req, res) => {
 
 exports.createProject = async (req, res) => {
   try {
-    const { title, description, category, technologies, deployedUrl, videoUrl, documentsUrl, price } = req.body;
+    const { title, description, category, technologies, deployedUrl, videoUrl, documentsUrl, folderUrl, price } = req.body;
 
     const project = await prisma.project.create({
       data: {
@@ -78,6 +101,7 @@ exports.createProject = async (req, res) => {
         deployedUrl,
         videoUrl,
         documentsUrl,
+        folderUrl,
         price: parseFloat(price),
         userId: req.user.id
       }
@@ -91,7 +115,7 @@ exports.createProject = async (req, res) => {
 
 exports.updateProject = async (req, res) => {
   try {
-    const { title, description, category, technologies, deployedUrl, videoUrl, documentsUrl, price } = req.body;
+    const { title, description, category, technologies, deployedUrl, videoUrl, documentsUrl, folderUrl, price } = req.body;
 
     // Check if project exists and belongs to user
     const existingProject = await prisma.project.findUnique({
@@ -116,6 +140,7 @@ exports.updateProject = async (req, res) => {
         deployedUrl,
         videoUrl,
         documentsUrl,
+        folderUrl,
         price: parseFloat(price)
       }
     });

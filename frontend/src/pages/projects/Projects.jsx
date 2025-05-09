@@ -16,6 +16,8 @@ const Projects = () => {
           data = await searchProjects(searchQuery);
         } else {
           data = await getProjects();
+          console.log(data); // <-- Add this
+
         }
         setProjects(data);
       } catch (error) {

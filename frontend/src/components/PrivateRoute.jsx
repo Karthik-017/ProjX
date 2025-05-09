@@ -1,18 +1,23 @@
-// src/components/PrivateRoute.jsx
 import { useContext } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 
-const PrivateRoute = ({ adminOnly = false }) => {
+const PrivateRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useContext(AuthContext);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
 
-  if (!user) return <Navigate to="/login" />;
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
 
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/" />;
+  if (adminOnly && user.role !== 'admin') {
+    return <Navigate to="/" />;
+  }
 
-  return <Outlet />;
+  return children;
 };
 
 export default PrivateRoute;

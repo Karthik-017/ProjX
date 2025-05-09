@@ -1,46 +1,64 @@
-import { useEffect, useState } from "react";
-import { getPendingProjects, approveProject } from "../../services/projects";
+import { useState, useEffect } from 'react';
+import { getUnapprovedProjects, approveProject } from '../../services/projects';
+import ProjectCard from '../../components/ProjectCard';
 
 const ApproveProjects = () => {
-  const [pending, setPending] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
-      const res = await getPendingProjects();
-      setPending(res);
+    const fetchProjects = async () => {
+      try {
+        const data = await getUnapprovedProjects();
+        setProjects(data);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetch();
+
+    fetchProjects();
   }, []);
 
-  const handleApprove = async (id) => {
-    await approveProject(id);
-    setPending((prev) => prev.filter((p) => p.id !== id));
+  const handleApprove = async (projectId) => {
+    try {
+      await approveProject(projectId);
+      setProjects(projects.filter(project => project.id !== projectId));
+    } catch (error) {
+      console.error('Error approving project:', error);
+    }
   };
 
+  if (loading) {
+    return <div className="text-center py-8">Loading projects...</div>;
+  }
+
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Pending Project Approvals</h2>
-      {pending.length === 0 ? (
-        <p>No pending projects.</p>
-      ) : (
-        <ul className="space-y-4">
-          {pending.map((proj) => (
-            <li key={proj.id} className="border p-4 rounded">
-              <h3 className="font-semibold">{proj.title}</h3>
-              <p className="text-gray-700">{proj.description}</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Approve Projects</h1>
+
+      {projects.length > 0 ? (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <div key={project.id} className="relative">
+              <ProjectCard project={project} />
               <button
-                onClick={() => handleApprove(proj.id)}
-                className="mt-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                onClick={() => handleApprove(project.id)}
+                className="mt-2 w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
               >
-                Approve
+                Approve Project
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-gray-500">No projects awaiting approval.</p>
+        </div>
       )}
     </div>
   );
 };
 
 export default ApproveProjects;
-// This component fetches and displays the projects pending approval. It allows admins to approve each project, removing it from the list once approved.

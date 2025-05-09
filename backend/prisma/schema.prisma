@@ -34,6 +34,7 @@ model Project {
   deployedUrl  String?
   videoUrl     String?
   documentsUrl String?
+  folderUrl    String
   price        Float
   isApproved   Boolean    @default(false)
   userId       Int
@@ -41,6 +42,7 @@ model Project {
   purchases    Purchase[]
   createdAt    DateTime   @default(now())
 }
+
 
 model Purchase {
   id             Int      @id @default(autoincrement())

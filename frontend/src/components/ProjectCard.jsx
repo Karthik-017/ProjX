@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { StarIcon } from '@heroicons/react/solid';
 
 const ProjectCard = ({ project }) => {
   return (

@@ -22,6 +22,18 @@ exports.createPurchase = async (req, res) => {
       return res.status(400).json({ message: 'Cannot purchase your own project' });
     }
 
+    // Check if the user has already purchased this project
+    const existingPurchase = await prisma.purchase.findFirst({
+      where: {
+        projectId: parseInt(projectId),
+        buyerUserId: req.user.id
+      }
+    });
+
+    if (existingPurchase) {
+      return res.status(400).json({ message: 'Project already purchased' });
+    }
+
     // Create purchase record
     const purchase = await prisma.purchase.create({
       data: {
@@ -37,6 +49,7 @@ exports.createPurchase = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.getAllPurchases = async (req, res) => {
   try {

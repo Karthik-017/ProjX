@@ -26,9 +26,21 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = (token) => {
-    localStorage.setItem('token', token);
-    getMe().then(setUser);
+  const login = async (credentials) => {
+    const response = await fetch(`http://localhost:5000/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    const data = await response.json();
+    if (response.ok) {
+      localStorage.setItem('token', data.token);
+      const userData = await getMe();
+      setUser(userData);
+    }
+    return data;
   };
 
   const logout = () => {

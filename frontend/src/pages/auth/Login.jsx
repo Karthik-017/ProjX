@@ -1,29 +1,27 @@
 import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../../services/auth';
 import AuthContext from '../../context/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
+    password: ''
   });
   const [error, setError] = useState('');
-  const { login: authLogin } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { token } = await login(formData);
-      authLogin(token);
+      await login(formData);
       navigate('/');
     } catch (err) {
       setError('Invalid email or password');
@@ -33,7 +31,9 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Sign in to your account
+        </h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">

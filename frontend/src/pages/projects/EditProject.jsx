@@ -1,50 +1,94 @@
-import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createProject } from '../../services/projects';
+import { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getProjectById, updateProject } from '../../services/projects';
 import AuthContext from '../../context/AuthContext';
 
-const CreateProject = () => {
+const EditProject = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'AIML',
     technologies: '',
-    price: '',
+    price: 0,
     deployedUrl: '',
     videoUrl: '',
     documentsUrl: '',
-    folderUrl: '' // ✅ Added this field
+    folderUrl: ''
   });
-
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const project = await getProjectById(id);
+
+        if (project.userId !== user?.id) {
+          navigate('/');
+          return;
+        }
+
+        setFormData({
+          title: project.title,
+          description: project.description,
+          category: project.category,
+          technologies: Array.isArray(project.technologies)
+            ? project.technologies.join(', ')
+            : project.technologies,
+          price: project.price,
+          deployedUrl: project.deployedUrl || '',
+          videoUrl: project.videoUrl || '',
+          documentsUrl: project.documentsUrl || '',
+          folderUrl: project.folderUrl || ''
+        });
+      } catch (err) {
+        setError('Failed to load project');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProject();
+  }, [id, user, navigate]);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createProject({
+      await updateProject(id, {
         ...formData,
+        technologies: Array.isArray(formData.technologies)
+          ? formData.technologies.join(', ')
+          : formData.technologies,
         price: parseFloat(formData.price)
       });
-      navigate('/my-projects');
+      navigate(`/projects/${id}`);
     } catch (err) {
-      setError(err.message || 'Failed to create project');
+      setError(err.response?.data?.message || 'Failed to update project');
     }
   };
 
-  if (!user) return null;
+  if (loading) {
+    return <div className="text-center py-8">Loading project...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">{error}</div>;
+  }
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Create New Project</h1>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Project</h1>
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
@@ -53,23 +97,21 @@ const CreateProject = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Title */}
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Title
+            Project Title
           </label>
           <input
             type="text"
             id="title"
             name="title"
+            required
             value={formData.title}
             onChange={handleChange}
-            required
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
           />
         </div>
 
-        {/* Description */}
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">
             Description
@@ -77,15 +119,14 @@ const CreateProject = () => {
           <textarea
             id="description"
             name="description"
+            rows={4}
+            required
             value={formData.description}
             onChange={handleChange}
-            required
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-            rows={4}
           />
         </div>
 
-        {/* Category */}
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">
             Category
@@ -98,47 +139,45 @@ const CreateProject = () => {
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
           >
             <option value="AIML">AI/ML</option>
-            <option value="WEB">Web</option>
-            <option value="ANDROID">Android</option>
-            <option value="HARDWARE">Hardware</option>
-            <option value="OTHERS">Others</option>
+            <option value="IoT">IoT</option>
+            <option value="Web Dev">Web Development</option>
+            <option value="Mobile">Mobile Development</option>
+            <option value="Data Science">Data Science</option>
           </select>
         </div>
 
-        {/* Technologies */}
         <div>
           <label htmlFor="technologies" className="block text-sm font-medium text-gray-700">
-            Technologies Used
+            Technologies Used (comma separated)
           </label>
           <input
             type="text"
             id="technologies"
             name="technologies"
+            required
             value={formData.technologies}
             onChange={handleChange}
-            required
-            placeholder="e.g. React, Node.js, MongoDB"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
           />
         </div>
 
-        {/* Price */}
         <div>
           <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-            Price (₹)
+            Price ($)
           </label>
           <input
             type="number"
             id="price"
             name="price"
+            min="0"
+            step="0.01"
+            required
             value={formData.price}
             onChange={handleChange}
-            required
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
           />
         </div>
 
-        {/* Deployed URL */}
         <div>
           <label htmlFor="deployedUrl" className="block text-sm font-medium text-gray-700">
             Deployed URL (optional)
@@ -153,7 +192,6 @@ const CreateProject = () => {
           />
         </div>
 
-        {/* Video URL */}
         <div>
           <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700">
             Video URL (optional)
@@ -168,7 +206,6 @@ const CreateProject = () => {
           />
         </div>
 
-        {/* Documents URL */}
         <div>
           <label htmlFor="documentsUrl" className="block text-sm font-medium text-gray-700">
             Documents URL (optional)
@@ -183,10 +220,9 @@ const CreateProject = () => {
           />
         </div>
 
-        {/* ✅ Folder URL */}
         <div>
           <label htmlFor="folderUrl" className="block text-sm font-medium text-gray-700">
-            Google Drive Folder URL (optional)
+            Folder URL (optional)
           </label>
           <input
             type="url"
@@ -198,13 +234,19 @@ const CreateProject = () => {
           />
         </div>
 
-        {/* Submit Button */}
-        <div>
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => navigate(`/projects/${id}`)}
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700"
           >
-            Submit Project
+            Save Changes
           </button>
         </div>
       </form>
@@ -212,4 +254,4 @@ const CreateProject = () => {
   );
 };
 
-export default CreateProject;
+export default EditProject;
