@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import ProjectCard from '../../components/ProjectCard';
-import { getProjects } from '../../services/projects';
+import { getProjects, getAllProjectsBulk } from '../../services/projects';
 import AuthContext from '../../context/AuthContext';
 
 const MyProjects = () => {
@@ -12,7 +12,7 @@ const MyProjects = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const allProjects = await getProjects();
+        const allProjects = await getAllProjectsBulk();
         const myProjects = allProjects.filter(project => project.userId === user.id);
         setProjects(myProjects);
       } catch (error) {

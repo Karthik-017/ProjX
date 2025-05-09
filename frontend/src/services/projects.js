@@ -5,6 +5,11 @@ export const getProjects = async () => {
   return response.data;
 };
 
+export const getAllProjectsBulk = async () => {
+  const response = await api.get('/projects/getProjectsBulk');
+  return response.data;
+};
+
 export const getProjectById = async (id) => {
   const response = await api.get(`/projects/${id}`);
   return response.data;

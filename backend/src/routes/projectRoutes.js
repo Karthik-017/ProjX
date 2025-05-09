@@ -8,6 +8,7 @@ router.get('/unapproved', auth.authenticate, auth.isAdmin, projectController.get
 router.get('/search', projectController.searchProjects);
 // Public routes
 router.get('/', projectController.getAllProjects);
+router.get('/getProjectsBulk', projectController.getAllProjectsBulk);
 router.get('/category/:category', projectController.getProjectsByCategory);
 router.get('/:id', projectController.getProjectById);
 

@@ -20,6 +20,25 @@ exports.getAllProjects = async (req, res) => {
   }
 };
 
+exports.getAllProjectsBulk = async (req, res) => {
+  try {
+    const projects = await prisma.project.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+    res.status(200).json(projects);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getUnapprovedProjects = async (req, res) => {
   try {
     const projects = await prisma.project.findMany({
