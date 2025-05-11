@@ -8,7 +8,17 @@ const EditProject = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const [projectData, setProjectData] = useState(null);
+  const [projectData, setProjectData] = useState({
+    title: '',
+    description: '',
+    category: '',
+    technologies: '',
+    price: '',
+    deployedUrl: '',
+    videoUrl: '',
+    documentsUrl: '',
+    folderUrl: ''
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -29,7 +39,7 @@ const EditProject = () => {
           technologies: Array.isArray(project.technologies)
             ? project.technologies.join(', ')
             : project.technologies,
-          price: project.price,
+          price: project.price.toString(),
           deployedUrl: project.deployedUrl || '',
           videoUrl: project.videoUrl || '',
           documentsUrl: project.documentsUrl || '',
@@ -86,21 +96,23 @@ const EditProject = () => {
             </div>
           )}
 
-          <ProjectForm
-            initialData={projectData}
-            onSubmit={handleSubmit}
-            error=""
-            isLoading={loading}
-            cancelAction={handleCancel}
-            customClasses={{
-              formContainer: "",
-              inputClass:
-                "appearance-none block w-full px-3 py-2 border border-midgray rounded-md bg-secondary placeholder-subtlegray focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition duration-200 ease-in-out",
-              labelClass: "block text-sm font-medium text-darkgray mb-1",
-              buttonClass:
-                "w-full flex justify-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-secondary bg-primary hover:bg-darkgray focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-200 ease-in-out"
-            }}
-          />
+          {!loading && (
+            <ProjectForm
+              initialData={projectData}
+              onSubmit={handleSubmit}
+              error=""
+              isLoading={loading}
+              cancelAction={handleCancel}
+              customClasses={{
+                formContainer: "",
+                inputClass:
+                  "appearance-none block w-full px-3 py-2 border border-midgray rounded-md bg-secondary placeholder-subtlegray focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition duration-200 ease-in-out",
+                labelClass: "block text-sm font-medium text-darkgray mb-1",
+                buttonClass:
+                  "w-full flex justify-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-secondary bg-primary hover:bg-darkgray focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-200 ease-in-out"
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -175,36 +175,81 @@ const ProjectDetails = () => {
 
             {/* Details Grid */}
             <div className="mb-8">
-              <h2 className="text-lg font-medium text-darkgray mb-3">Details</h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <p className="text-sm font-medium text-subtlegray mb-1">Category</p>
-                  <p className="text-darkgray">{project.category}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-subtlegray mb-1">Technologies</p>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {project.technologies.map((tech) => (
-                      <span key={tech} className="px-3 py-1 bg-lightgray text-darkgray text-xs rounded-full">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-subtlegray mb-1">Price</p>
-                  <p className="text-primary font-medium">${project.price}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-subtlegray mb-1">Status</p>
-                  <span className={`px-3 py-1 inline-flex text-xs font-medium rounded-full ${
-                    project.isApproved ? 'bg-primary text-secondary' : 'bg-lightgray text-darkgray'
-                  }`}>
-                    {project.isApproved ? "Approved" : "Pending Approval"}
-                  </span>
-                </div>
-              </div>
-            </div>
+  <h2 className="text-lg font-medium text-darkgray mb-3">Details</h2>
+  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+    <div>
+      <p className="text-sm font-medium text-subtlegray mb-1">Category</p>
+      <p className="text-darkgray">{project.category}</p>
+    </div>
+    <div>
+      <p className="text-sm font-medium text-subtlegray mb-1">Technologies</p>
+      <div className="flex flex-wrap gap-2 mt-1">
+        {project.technologies.map((tech) => (
+          <span key={tech} className="px-3 py-1 bg-lightgray text-darkgray text-xs rounded-full">
+            {tech}
+          </span>
+        ))}
+      </div>
+    </div>
+    <div>
+      <p className="text-sm font-medium text-subtlegray mb-1">Price</p>
+      <p className="text-primary font-medium">${project.price}</p>
+    </div>
+    <div>
+      <p className="text-sm font-medium text-subtlegray mb-1">Status</p>
+      <span className={`px-3 py-1 inline-flex text-xs font-medium rounded-full ${
+        project.isApproved ? 'bg-primary text-secondary' : 'bg-lightgray text-darkgray'
+      }`}>
+        {project.isApproved ? "Approved" : "Pending Approval"}
+      </span>
+    </div>
+    {/* Add purchase count display for owner/admin */}
+    {(user?.id === project.userId || user?.role === 'admin') && project.purchaseCount !== undefined && (
+  <div className="sm:col-span-2">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-lightgray rounded-lg border border-midgray">
+      <div className="flex items-center gap-3">
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-5 w-5 text-primary" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4a2 2 0 000-4zm-8 2a2 2 0 11-4 0a2 2 0 014 0z" 
+          />
+        </svg>
+        <span className="text-sm font-medium text-darkgray">
+          Users purchased this project {project.purchaseCount} time{project.purchaseCount !== 1 ? 's' : ''}
+        </span>
+      </div>
+      {(user?.id === project.userId || user?.role === 'admin') && (
+        <span className="text-xs text-subtlegray flex items-center">
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="h-3 w-3 mr-1" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+            />
+          </svg>
+          Visible only to you and the admin. Please mail us once the project has reached 2 purchases to get your payment. (mail-id: example@mail.com)
+        </span>
+      )}
+    </div>
+  </div>
+)}
+  </div>
+</div>
 
             {/* Deployed Link */}
             {project.deployedUrl && (

@@ -283,6 +283,61 @@ exports.getProjectsByCategory = async (req, res) => {
   }
 };
 
+exports.getProjectById = async (req, res) => {
+  try {
+    const projectId = parseInt(req.params.id);
+    
+    // Base query without purchases
+    const baseQuery = {
+      where: { id: projectId },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        _count: {
+          select: { purchases: true } // This will count all purchases
+        }
+      }
+    };
+
+    // Conditionally include purchases if user is authenticated
+    if (req.user) {
+      baseQuery.include.purchases = {
+        where: { buyerUserId: req.user.id },
+        select: { id: true }
+      };
+    }
+
+    const project = await prisma.project.findUnique(baseQuery);
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Determine access rights
+    const isOwner = req.user && project.userId === req.user.id;
+    const isAdmin = req.user && req.user.role === 'admin';
+    const hasPurchased = req.user && project.purchases?.length > 0;
+
+    // Clone project to modify sensitive data
+    const projectResponse = { 
+      ...project,
+      purchaseCount: (isOwner || isAdmin) ? project._count.purchases : undefined
+    };
+    
+    // Hide private URLs if no access
+    if (!isOwner && !isAdmin && !hasPurchased) {
+      projectResponse.documentsUrl = null;
+      projectResponse.folderUrl = null;
+    }
+
+    // Remove the _count field from response
+    delete projectResponse._count;
+
+    res.status(200).json(projectResponse);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.searchProjects = async (req, res) => {
   try {
     const { q } = req.query;
