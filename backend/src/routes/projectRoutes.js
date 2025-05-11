@@ -10,7 +10,7 @@ router.get('/search', projectController.searchProjects);
 router.get('/', projectController.getAllProjects);
 router.get('/getProjectsBulk', projectController.getAllProjectsBulk);
 router.get('/category/:category', projectController.getProjectsByCategory);
-router.get('/:id', projectController.getProjectById);
+router.get('/:id', auth.optionalAuth, projectController.getProjectById);
 
 // router.get('/search', projectController.searchProjects);
 

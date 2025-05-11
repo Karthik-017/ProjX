@@ -29,3 +29,21 @@ exports.isAdmin = (req, res, next) => {
   }
   next();
 };
+
+exports.optionalAuth = async (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { id: true, role: true } // Only select necessary fields
+      });
+      req.user = user;
+    } catch (error) {
+      // Token is invalid, proceed without user
+    }
+  }
+  next();
+};
