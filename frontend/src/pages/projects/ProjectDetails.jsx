@@ -204,7 +204,7 @@ const ProjectDetails = () => {
       </span>
     </div>
     {/* Add purchase count display for owner/admin */}
-    {/* {(user?.id === project.userId || user?.role === 'admin') && project.purchaseCount !== undefined && (
+    {(user?.id === project.userId || user?.role === 'admin') && project.purchaseCount !== undefined && (
   <div className="sm:col-span-2">
     <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-lightgray rounded-lg border border-midgray">
       <div className="flex items-center gap-3">
@@ -247,7 +247,7 @@ const ProjectDetails = () => {
       )}
     </div>
   </div>
-)} */}
+)}
   </div>
 </div>
 

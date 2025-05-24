@@ -114,20 +114,21 @@ exports.getUnapprovedProjects = async (req, res) => {
 exports.getProjectById = async (req, res) => {
   try {
     const projectId = parseInt(req.params.id);
-    
-    // Base query without purchases
+
+    // Base query with user info and purchase count
     const baseQuery = {
       where: { id: projectId },
       include: {
-        user: { select: { id: true, name: true, email: true } }
-      }
+        user: { select: { id: true, name: true, email: true } },
+        _count: { select: { purchases: true } }, // Count of all purchases
+      },
     };
 
     // Conditionally include purchases if user is authenticated
     if (req.user) {
       baseQuery.include.purchases = {
         where: { buyerUserId: req.user.id },
-        select: { id: true }
+        select: { id: true },
       };
     }
 
@@ -137,21 +138,25 @@ exports.getProjectById = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    // console.log("project"+project.userId);
-    // console.log("req"+req.user.id);
     // Determine access rights
     const isOwner = req.user && project.userId === req.user.id;
     const isAdmin = req.user && req.user.role === 'admin';
     const hasPurchased = req.user && project.purchases?.length > 0;
 
-    // Clone project to modify sensitive data
-    const projectResponse = { ...project };
-    
-    // Hide private URLs if no access
+    // Prepare response object
+    const projectResponse = { 
+      ...project,
+      purchaseCount: (isOwner || isAdmin) ? project._count.purchases : undefined,
+    };
+
+    // Hide private URLs if user has no access
     if (!isOwner && !isAdmin && !hasPurchased) {
       projectResponse.documentsUrl = null;
       projectResponse.folderUrl = null;
     }
+
+    // Remove _count from response
+    delete projectResponse._count;
 
     res.status(200).json(projectResponse);
   } catch (error) {
