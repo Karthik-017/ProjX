@@ -1,141 +1,321 @@
-import { useState, useEffect } from 'react';
-import { getUsers } from '../../services/users';
+import React, { useState, useEffect } from 'react';
+import { Shield, Users, Filter, Calendar, DollarSign, AlertTriangle, CheckCircle, Search, Download } from 'lucide-react';
+import { getEligibleSellers } from '../../services/purchases';
 
-const AdminDashboard = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+const AdminSellerMonitor = () => {
+  const [sellers, setSellers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [filters, setFilters] = useState({
+    status: 'all',
+    eligibleOnly: 'true',
+    startDate: '2025-05-01',
+    endDate: '2025-06-30'
+  });
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await getUsers();
-        setUsers(data);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      } finally {
-        setLoading(false);
+    fetchEligibleSellers();
+  }, [filters]);
+
+  const fetchEligibleSellers = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Admin token not found');
       }
-    };
 
-    fetchUsers();
-  }, []);
+      const data = await getEligibleSellers(filters);
+      setSellers(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-offwhite flex items-center justify-center">
-        <div className="animate-pulse flex flex-col w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-          <div className="h-12 w-64 bg-lightgray rounded-lg"></div>
-          <div className="h-16 bg-lightgray rounded-lg"></div>
-          <div className="space-y-4">
-            <div className="h-12 bg-lightgray rounded-lg"></div>
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-lightgray rounded-lg"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredSellers = sellers.filter(seller =>
+    seller.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const exportData = () => {
+    const csvContent = [
+      ['Seller ID', 'Seller Name', 'Unpaid Projects'],
+      ...filteredSellers.map(seller => [
+        seller.id,
+        seller.name,
+        seller.unpaidProjects
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `eligible-sellers-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const getEligibilityStats = () => {
+    const eligible = filteredSellers.filter(s => s.unpaidProjects >= 2).length;
+    const total = filteredSellers.length;
+    return { eligible, total };
+  };
+
+  const stats = getEligibilityStats();
 
   return (
-    <div className="min-h-screen bg-offwhite py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-10">
-          <h1 className="text-3xl font-light text-darkgray">
-            Admin <span className="font-medium text-primary">Dashboard</span>
-          </h1>
-          <p className="text-subtlegray mt-2">
-            Manage users and platform content
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center mb-2">
+              <Shield className="w-8 h-8 text-red-600 mr-3" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Seller Payment Monitor</h1>
+                <p className="text-gray-600">Monitor sellers eligible for payments</p>
+              </div>
+            </div>
+            <button
+              onClick={exportData}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </button>
+          </div>
         </div>
 
-        <div className="bg-secondary rounded-xl shadow-sm overflow-hidden border border-midgray">
-          <div className="px-6 py-5 border-b border-lightgray bg-offwhite">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-lg font-medium text-darkgray">
-                Users <span className="text-subtlegray font-normal">({users.length})</span>
-              </h3>
-              {/* <div className="mt-2 sm:mt-0">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-subtlegray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search users..."
-                    className="block w-full pl-10 pr-4 py-2 border border-midgray rounded-md bg-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm transition duration-200"
-                  />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Sellers</p>
+                <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
+              </div>
+              <Users className="w-8 h-8 text-blue-600" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Eligible for Payment</p>
+                <p className="text-2xl font-semibold text-green-600">{stats.eligible}</p>
+              </div>
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Eligibility Rate</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {stats.total > 0 ? Math.round((stats.eligible / stats.total) * 100) : 0}%
+                </p>
+              </div>
+              <DollarSign className="w-8 h-8 text-orange-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex items-center mb-4">
+            <Filter className="w-5 h-5 text-gray-600 mr-2" />
+            <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+              <select
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All</option>
+                <option value="paid">Paid</option>
+                <option value="unpaid">Unpaid</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Eligibility Filter</label>
+              <select
+                value={filters.eligibleOnly}
+                onChange={(e) => handleFilterChange('eligibleOnly', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="true">Eligible Only (≥2 unpaid)</option>
+                <option value="false">All Sellers</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                value={filters.startDate}
+                onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                value={filters.endDate}
+                onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="relative">
+              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search sellers by name..."
+                value={searchTerm}
+                onChange={handleSearch}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading seller data...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+            <div className="flex items-center text-red-800 mb-2">
+              <AlertTriangle className="w-5 h-5 mr-2" />
+              <h3 className="font-semibold">Error</h3>
+            </div>
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        {/* Sellers Table */}
+        {!loading && !error && (
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Seller Payment Eligibility</h2>
+                <div className="flex items-center text-sm text-gray-500">
+                  <Users className="w-4 h-4 mr-1" />
+                  {filteredSellers.length} sellers found
                 </div>
-              </div> */}
+              </div>
             </div>
-          </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-lightgray">
-              <thead className="bg-offwhite">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-subtlegray uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-subtlegray uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-subtlegray uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-subtlegray uppercase tracking-wider">
-                    Joined
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-secondary divide-y divide-lightgray">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-offwhite transition-colors duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-darkgray">{user.name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-subtlegray">{user.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 inline-flex text-xs font-medium rounded-full ${
-                        user.role === 'admin' 
-                          ? 'bg-primary text-secondary' 
-                          : 'bg-lightgray text-darkgray'
-                      }`}>
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-subtlegray">
-                        {new Date(user.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {filteredSellers.length === 0 ? (
+              <div className="px-6 py-12 text-center">
+                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No sellers found</h3>
+                <p className="text-gray-500">Try adjusting your filters to see more results.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Seller ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Seller Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Unpaid Projects
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Eligibility Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredSellers.map((seller) => (
+                      <tr key={seller.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            #{seller.id}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10">
+                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                <span className="text-sm font-medium text-gray-700">
+                                  {seller.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{seller.name}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <span className={`text-sm font-semibold ${
+                              seller.unpaidProjects >= 2 ? 'text-red-600' : 'text-gray-900'
+                            }`}>
+                              {seller.unpaidProjects}
+                            </span>
+                            {seller.unpaidProjects >= 2 && (
+                              <AlertTriangle className="w-4 h-4 text-red-500 ml-2" />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            seller.unpaidProjects >= 2
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {seller.unpaidProjects >= 2 ? 'Eligible for Payment' : 'Not Eligible'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-
-          {users.length === 0 && (
-            <div className="py-12 text-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-midgray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              <h3 className="mt-4 text-lg font-medium text-darkgray">No Users Found</h3>
-              <p className="mt-2 text-subtlegray">There are currently no users registered on the platform.</p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default AdminDashboard;
+export default AdminSellerMonitor;

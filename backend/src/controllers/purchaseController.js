@@ -149,12 +149,46 @@ exports.getPurchaseById = async (req, res) => {
 };
 
 
+// exports.getSellerPurchases = async (req, res) => {
+//   try {
+//     const sellerId = parseInt(req.params.id);
+
+//       // Check if requester is the seller or an admin
+//     if (req.user.id !== sellerId && req.user.role !== 'admin') {
+//       return res.status(403).json({ message: 'Not authorized to view this data' });
+//     }
+
+//     const purchases = await prisma.purchase.findMany({
+//       where: {
+//         sellerUserId: sellerId
+//       },
+//       select: {
+//         createdAt: true,
+//         priceAtPurchase: true,
+//         payment_status: true,
+//         project: {
+//           select: {
+//             title: true
+//           }
+//         }
+//       },
+//       orderBy: {
+//         createdAt: 'desc'
+//       }
+//     });
+
+//     res.status(200).json(purchases);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 exports.getSellerPurchases = async (req, res) => {
   try {
-    const sellerId = parseInt(req.params.id);
+    const sellerId = req.user.id; // Seller ID from middleware
 
-      // Check if requester is the seller or an admin
-    if (req.user.id !== sellerId && req.user.role !== 'admin') {
+    // Check if the user is an admin or the seller themselves
+    if (req.user.role !== 'admin' && req.user.id !== sellerId) {
       return res.status(403).json({ message: 'Not authorized to view this data' });
     }
 
@@ -182,7 +216,6 @@ exports.getSellerPurchases = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 
 exports.getSellerTransactions = async (req, res) => {
