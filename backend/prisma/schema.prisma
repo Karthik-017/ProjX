@@ -53,4 +53,5 @@ model Purchase {
   sellerUserId   Int
   priceAtPurchase Float
   createdAt      DateTime @default(now())
+  payment_status   Boolean  @default(false) 
 }

@@ -147,3 +147,117 @@ exports.getPurchaseById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+exports.getSellerPurchases = async (req, res) => {
+  try {
+    const sellerId = parseInt(req.params.id);
+
+      // Check if requester is the seller or an admin
+    if (req.user.id !== sellerId && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to view this data' });
+    }
+
+    const purchases = await prisma.purchase.findMany({
+      where: {
+        sellerUserId: sellerId
+      },
+      select: {
+        createdAt: true,
+        priceAtPurchase: true,
+        payment_status: true,
+        project: {
+          select: {
+            title: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.status(200).json(purchases);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+exports.getSellerTransactions = async (req, res) => {
+  const sellerId = parseInt(req.params.id);
+
+  try {
+
+    const seller = await prisma.user.findUnique({
+      where: { id: sellerId },
+      select: { name: true }
+    });
+
+    if (!seller) {
+      return res.status(404).json({ message: 'Seller not found' });
+    }
+
+
+    const transactions = await prisma.purchase.findMany({
+      where: { sellerUserId: sellerId },
+      select: {
+        id: true, // purchaseId
+        priceAtPurchase: true,
+        payment_status: true,
+        createdAt: true,
+        project: {
+          select: {
+            id: true,
+            title: true
+          }
+        },
+        buyer: {
+          select: {
+            name: true
+          }
+        },
+        // seller is not directly related in purchase, but we can infer from user ID
+      }
+    });
+
+    const result = transactions.map(tx => ({
+  purchaseId: tx.id,
+  projectId: tx.project?.id,
+  projectTitle: tx.project?.title,
+  sellerName: seller.name,
+  buyerName: tx.buyer?.name || 'Unknown Buyer',
+  price: tx.priceAtPurchase,
+  createdDate: tx.createdAt,
+  payment_status: tx.payment_status
+}));
+
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+exports.updatePaymentStatus = async (req, res) => {
+  const { purchaseId } = req.params;
+  const { payment_status } = req.body;
+
+  try {
+    const updatedPurchase = await prisma.purchase.update({
+      where: { id: parseInt(purchaseId) },
+      data: {
+        payment_status: payment_status
+      }
+    });
+
+    res.status(200).json({
+      message: 'Payment status updated successfully',
+      updatedPurchase
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

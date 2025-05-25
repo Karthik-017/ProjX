@@ -15,4 +15,7 @@ router.get('/:id', auth.authenticate, userController.getUserById);
 router.get('/', auth.authenticate, auth.isAdmin, userController.getAllUsers);
 router.delete('/:id', auth.authenticate, auth.isAdmin, userController.deleteUser);
 
+router.get('/monitor/sellers', auth.authenticate, auth.isAdmin, userController.getSellersWithUnpaidStats);
+
+
 module.exports = router;
