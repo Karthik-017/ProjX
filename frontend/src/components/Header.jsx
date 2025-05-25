@@ -42,7 +42,7 @@ const Header = () => {
                     to="/admin"
                     className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-subtlegray hover:text-darkgray hover:border-midgray transition duration-200"
                   >
-                    Admin
+                    Dashboard
                   </Link>
                   <Link
                     to="/approve-projects"

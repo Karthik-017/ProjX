@@ -15,6 +15,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import ApproveProjects from './pages/admin/ApproveProjects';
 import EditProject from './pages/projects/EditProject';
 import PrivateRoute from './components/PrivateRoute';
+import SellerPurchasesDashboard from './pages/user/Dashboard'
 
 function App() {
   return (
@@ -57,6 +58,12 @@ function App() {
               <Route path="/profile" element={
                 <PrivateRoute>
                   <Profile />
+                </PrivateRoute>
+              } />
+
+              <Route path="/dashboard" element={
+                <PrivateRoute>
+                  <SellerPurchasesDashboard />
                 </PrivateRoute>
               } />
               
